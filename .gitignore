@@ -1,1 +1,9 @@
 *.exe
+*.exe~
+*.so
+
+*.test
+
+# Other
+.vscode
+.idea
