@@ -1,4 +1,4 @@
-package main
+package skiplist
 
 import (
 	"bytes"
@@ -25,7 +25,7 @@ type SkipList struct {
 	rnd      *rand.Rand
 }
 
-func NewSkipList(max int) *SkipList {
+func New(max int) *SkipList {
 
 	sl := &SkipList{
 		height:   1,
@@ -47,8 +47,6 @@ func (sl *SkipList) randLevel() int {
 		height++
 		dice = sl.rnd.Float64()
 	}
-
-	fmt.Println("randLevel: ", dice, height)
 
 	return height
 }

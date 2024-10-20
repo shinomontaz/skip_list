@@ -1,9 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	skiplist "skip_list/v1"
+)
 
 func main() {
-	sl := NewSkipList(16)
+	sl := skiplist.New(16)
 
 	// insert:
 	// aaa -> 12312
