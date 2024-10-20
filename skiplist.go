@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"math"
 	"math/rand"
 	"time"
 )
 
 // Byte-keyed skip list example
 
-var max_tower int
+const p = 0.5
 
 type node struct {
 	key   []byte
@@ -20,26 +19,18 @@ type node struct {
 }
 
 type SkipList struct {
-	head          *node
-	height        int
-	probabilities map[int]uint32
-	rnd           *rand.Rand
+	head     *node
+	height   int
+	maxlevel int
+	rnd      *rand.Rand
 }
 
 func NewSkipList(max int) *SkipList {
-	probs := make(map[int]uint32)
-
-	p := 1.0
-
-	for i := 0; i < max; i++ {
-		probs[i] = uint32(p * float64(math.MaxUint32))
-		p *= 0.5
-	}
 
 	sl := &SkipList{
-		height:        1,
-		probabilities: probs,
-		rnd:           rand.New(rand.NewSource(time.Now().UnixNano())),
+		height:   1,
+		maxlevel: max,
+		rnd:      rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 
 	sl.head = &node{
@@ -49,13 +40,15 @@ func NewSkipList(max int) *SkipList {
 }
 
 func (sl *SkipList) randLevel() int {
-	dice := sl.rnd.Uint32()
 
-	max := len(sl.probabilities)
+	dice := sl.rnd.Float64()
 	height := 1
-	for height < max && dice <= sl.probabilities[height] {
+	for dice < p && height < sl.maxlevel {
 		height++
+		dice = sl.rnd.Float64()
 	}
+
+	fmt.Println("randLevel: ", dice, height)
 
 	return height
 }
@@ -79,7 +72,7 @@ func (sl *SkipList) Insert(key []byte, val []byte) {
 	}
 
 	height := sl.randLevel()
-	nd := &node{key: key, val: val, links: make([]*node, len(sl.probabilities))}
+	nd := &node{key: key, val: val, links: make([]*node, sl.maxlevel)}
 
 	for level := 0; level < height; level++ {
 		prev := path[level]
@@ -122,7 +115,7 @@ func (sl *SkipList) Delete(key []byte) error {
 
 func (sl *SkipList) lookup(key []byte) (*node, []*node) {
 	var next *node
-	path := make([]*node, len(sl.probabilities)) // TODO: refactor this
+	path := make([]*node, sl.maxlevel) // TODO: refactor this
 
 	prev := sl.head
 	for level := sl.height - 1; level >= 0; level-- {
